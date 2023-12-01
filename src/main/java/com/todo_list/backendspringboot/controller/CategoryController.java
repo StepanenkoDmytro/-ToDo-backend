@@ -1,7 +1,6 @@
 package com.todo_list.backendspringboot.controller;
 
 import com.todo_list.backendspringboot.entity.Category;
-import com.todo_list.backendspringboot.entity.Priority;
 import com.todo_list.backendspringboot.repository.CategoryRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -21,9 +20,19 @@ public class CategoryController {
         this.categoryRepository = categoryRepository;
     }
 
-    @GetMapping("/test")
-    public List<Category> test() {
-        return categoryRepository.findAll();
+    @GetMapping("/all")
+    public List<Category> findAll() {
+        return categoryRepository.findAllByOrderByTitleAsc();
+    }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Category> findById(@PathVariable Long id) {
+        Optional<Category> category = categoryRepository.findById(id);
+        if(category.isEmpty()) {
+            return new ResponseEntity("Priority with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        return ResponseEntity.ok(category.get());
     }
 
     @PostMapping("/add")
@@ -49,16 +58,6 @@ public class CategoryController {
         }
 
         return ResponseEntity.ok(categoryRepository.save(category));
-    }
-
-    @GetMapping("/id/{id}")
-    public ResponseEntity<Category> findById(@PathVariable Long id) {
-        Optional<Category> category = categoryRepository.findById(id);
-        if(category.isEmpty()) {
-            return new ResponseEntity("Priority with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
-        }
-
-        return ResponseEntity.ok(category.get());
     }
 
     @DeleteMapping("/id/{id}")

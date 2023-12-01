@@ -1,6 +1,5 @@
 package com.todo_list.backendspringboot.controller;
 
-import com.todo_list.backendspringboot.entity.Category;
 import com.todo_list.backendspringboot.entity.Priority;
 import com.todo_list.backendspringboot.repository.PriorityRepository;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -9,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @RestController
@@ -21,9 +19,19 @@ public class PriorityController {
         this.priorityRepository = priorityRepository;
     }
 
-    @GetMapping("/test")
-    public List<Priority> test() {
-        return priorityRepository.findAll();
+    @GetMapping("/all")
+    public List<Priority> findAll() {
+        return priorityRepository.findAllByOrderByIdAsc();
+    }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Priority> findById(@PathVariable Long id) {
+        Optional<Priority> priority = priorityRepository.findById(id);
+        if(priority.isEmpty()) {
+            return new ResponseEntity("Priority with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
+        }
+
+        return ResponseEntity.ok(priority.get());
     }
 
     @PostMapping("/add")
@@ -57,16 +65,6 @@ public class PriorityController {
         }
 
         return ResponseEntity.ok(priorityRepository.save(priority));
-    }
-
-    @GetMapping("/id/{id}")
-    public ResponseEntity<Priority> findById(@PathVariable Long id) {
-        Optional<Priority> priority = priorityRepository.findById(id);
-        if(priority.isEmpty()) {
-            return new ResponseEntity("Priority with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
-        }
-
-        return ResponseEntity.ok(priority.get());
     }
 
     @DeleteMapping("/id/{id}")
