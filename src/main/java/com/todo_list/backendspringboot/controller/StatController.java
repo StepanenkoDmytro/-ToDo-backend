@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/stat")
 public class StatController {
+    //TODO add logger for controller
     private final StatRepository statRepository;
     private final Long defaultId = 1L;
 

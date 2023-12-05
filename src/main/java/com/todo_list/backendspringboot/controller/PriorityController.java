@@ -2,6 +2,7 @@ package com.todo_list.backendspringboot.controller;
 
 import com.todo_list.backendspringboot.entity.Priority;
 import com.todo_list.backendspringboot.repository.PriorityRepository;
+import com.todo_list.backendspringboot.search.PrioritySearchValues;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/priority")
 public class PriorityController {
+    //TODO add logger for controller
     private final PriorityRepository priorityRepository;
 
     public PriorityController(PriorityRepository priorityRepository) {
@@ -32,6 +34,11 @@ public class PriorityController {
         }
 
         return ResponseEntity.ok(priority.get());
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<Priority>> search(@RequestBody PrioritySearchValues priorityValues) {
+        return ResponseEntity.ok(priorityRepository.findByTitle(priorityValues.getText()));
     }
 
     @PostMapping("/add")
@@ -64,7 +71,8 @@ public class PriorityController {
             return new ResponseEntity("Missed param: color", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(priorityRepository.save(priority));
+        priorityRepository.save(priority);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @DeleteMapping("/id/{id}")

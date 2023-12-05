@@ -2,6 +2,7 @@ package com.todo_list.backendspringboot.controller;
 
 import com.todo_list.backendspringboot.entity.Category;
 import com.todo_list.backendspringboot.repository.CategoryRepository;
+import com.todo_list.backendspringboot.search.CategorySearchValues;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/category")
 public class CategoryController {
-
+    //TODO add logger for controller
     private final CategoryRepository categoryRepository;
 
     public CategoryController(CategoryRepository categoryRepository) {
@@ -29,10 +30,15 @@ public class CategoryController {
     public ResponseEntity<Category> findById(@PathVariable Long id) {
         Optional<Category> category = categoryRepository.findById(id);
         if(category.isEmpty()) {
-            return new ResponseEntity("Priority with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity("Category with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
         }
 
         return ResponseEntity.ok(category.get());
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<List<Category>> search(@RequestBody CategorySearchValues categoryValues) {
+        return ResponseEntity.ok(categoryRepository.findByTitle(categoryValues.getText()));
     }
 
     @PostMapping("/add")
@@ -57,7 +63,9 @@ public class CategoryController {
             return new ResponseEntity("Missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(categoryRepository.save(category));
+        categoryRepository.save(category);
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @DeleteMapping("/id/{id}")
