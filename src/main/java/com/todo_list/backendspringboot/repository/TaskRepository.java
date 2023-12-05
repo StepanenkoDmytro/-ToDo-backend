@@ -1,12 +1,13 @@
 package com.todo_list.backendspringboot.repository;
 
 import com.todo_list.backendspringboot.entity.Task;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
@@ -16,5 +17,9 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
            "(:priorityId is null or p.priority.id=:priorityId) and " +
            "(:categoryId is null or p.category.id=:categoryId)"
     )
-    List<Task> findByParams(@Param("title") String title, @Param("completed") Integer completed, @Param("priorityId") Long priorityId, @Param("categoryId") Long categoryId);
+    Page<Task> findByParams(@Param("title") String title,
+                            @Param("completed") Integer completed,
+                            @Param("priorityId") Long priorityId,
+                            @Param("categoryId") Long categoryId,
+                            Pageable pageable);
 }

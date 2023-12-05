@@ -1,9 +1,12 @@
 package com.todo_list.backendspringboot.controller;
 
 import com.todo_list.backendspringboot.entity.Task;
-import com.todo_list.backendspringboot.repository.TaskRepository;
 import com.todo_list.backendspringboot.search.TaskSearchValues;
+import com.todo_list.backendspringboot.service.TaskService;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,20 +18,20 @@ import java.util.Optional;
 @RequestMapping("/task")
 public class TaskController {
     //TODO add logger for controller
-    private final TaskRepository taskRepository;
+    private final TaskService taskService;
 
-    public TaskController(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public TaskController(TaskService taskRepository) {
+        this.taskService = taskRepository;
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<Task>> findAll() {
-        return ResponseEntity.ok(taskRepository.findAll());
+        return ResponseEntity.ok(taskService.findAll());
     }
 
     @GetMapping("/id/{id}")
     public ResponseEntity<Task> findById(@PathVariable Long id) {
-        Optional<Task> task = taskRepository.findById(id);
+        Optional<Task> task = taskService.findById(id);
         if(task.isEmpty()) {
             return new ResponseEntity("Task with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
         }
@@ -37,15 +40,9 @@ public class TaskController {
     }
 
     @PostMapping("/search")
-    public ResponseEntity<List<Task>> search(@RequestBody TaskSearchValues taskSearchValues) {
-        String text = taskSearchValues.getTitle() != null ? taskSearchValues.getTitle() : null;
+    public ResponseEntity<Page<Task>> search(@RequestBody TaskSearchValues taskSearchValues) {
 
-        Integer completed = taskSearchValues.getCompleted() != null ? taskSearchValues.getCompleted() : null;
-
-        Long priorityId = taskSearchValues.getPriorityId() != null ? taskSearchValues.getPriorityId() : null;
-        Long categoryId = taskSearchValues.getCategoryId() != null ? taskSearchValues.getCategoryId() : null;
-
-        return ResponseEntity.ok(taskRepository.findByParams(text, completed, priorityId, categoryId));
+        return ResponseEntity.ok(taskService.findByParams(taskSearchValues));
     }
 
     @PostMapping("/add")
@@ -58,7 +55,7 @@ public class TaskController {
             return new ResponseEntity("Missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(taskRepository.save(task));
+        return ResponseEntity.ok(taskService.save(task));
     }
 
     @PutMapping("/update")
@@ -71,7 +68,7 @@ public class TaskController {
             return new ResponseEntity("Missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        taskRepository.save(task);
+        taskService.save(task);
 
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -79,7 +76,7 @@ public class TaskController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity delete(@PathVariable Long id) {
         try {
-            taskRepository.deleteById(id);
+            taskService.deleteById(id);
         } catch (EmptyResultDataAccessException e) {
             return new ResponseEntity("Priority with id=" + id + "not found", HttpStatus.NOT_ACCEPTABLE);
         }
